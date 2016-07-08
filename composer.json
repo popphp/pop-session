@@ -1,0 +1,33 @@
+{
+    "name": "popphp/pop-session",
+    "description": "Pop Session Component for Pop PHP Framework",
+    "keywords": [
+        "sessions",
+        "php",
+        "pop",
+        "pop php"
+    ],
+    "homepage": "http://www.popphp.org/",
+    "license": "New BSD",
+    "authors": [
+        {
+            "name": "Nick Sagona",
+            "email": "dev@nolainteractive.com",
+            "homepage": "http://www.nolainteractive.com/"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pop\\Session\\": "src/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.1.x-dev"
+        }
+    }
+
+}
