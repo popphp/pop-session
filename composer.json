@@ -3,6 +3,7 @@
     "description": "Pop Session Component for Pop PHP Framework",
     "keywords": [
         "sessions",
+        "session",
         "php",
         "pop",
         "pop php"
@@ -26,7 +27,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.1.x-dev"
+            "dev-master": "3.0.x-dev"
         }
     }
 
