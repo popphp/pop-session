@@ -21,7 +21,7 @@ namespace Pop\Session;
  * @author     Nick Sagona, III <dev@nolainteractive.com>
  * @copyright  Copyright (c) 2009-2016 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    3.0.0
+ * @version    3.1.0
  */
 class SessionNamespace implements \ArrayAccess
 {
@@ -38,7 +38,6 @@ class SessionNamespace implements \ArrayAccess
      * Private method to instantiate the session object
      *
      * @param  string $namespace
-     * @return SessionNamespace
      */
     public function __construct($namespace)
     {
@@ -54,7 +53,7 @@ class SessionNamespace implements \ArrayAccess
      * Set current namespace
      *
      * @param  string $namespace
-     * @return Session
+     * @return SessionNamespace
      */
     public function setNamespace($namespace)
     {
@@ -78,7 +77,7 @@ class SessionNamespace implements \ArrayAccess
      * @param  string $key
      * @param  mixed  $value
      * @param  int    $expire
-     * @return Session
+     * @return SessionNamespace
      */
     public function setTimedValue($key, $value, $expire = 300)
     {
@@ -93,7 +92,7 @@ class SessionNamespace implements \ArrayAccess
      * @param  string $key
      * @param  mixed  $value
      * @param  int    $hops
-     * @return Session
+     * @return SessionNamespace
      */
     public function setRequestValue($key, $value, $hops = 1)
     {

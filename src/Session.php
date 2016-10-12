@@ -21,7 +21,7 @@ namespace Pop\Session;
  * @author     Nick Sagona, III <dev@nolainteractive.com>
  * @copyright  Copyright (c) 2009-2016 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    3.0.0
+ * @version    3.1.0
  */
 class Session implements \ArrayAccess
 {
@@ -42,8 +42,6 @@ class Session implements \ArrayAccess
      * Constructor
      *
      * Private method to instantiate the session object
-     *
-     * @return Session
      */
     private function __construct()
     {
