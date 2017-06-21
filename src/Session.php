@@ -21,7 +21,7 @@ namespace Pop\Session;
  * @author     Nick Sagona, III <dev@nolainteractive.com>
  * @copyright  Copyright (c) 2009-2017 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    3.1.0
+ * @version    3.1.1
  */
 class Session implements \ArrayAccess
 {
@@ -79,7 +79,7 @@ class Session implements \ArrayAccess
     public function setTimedValue($key, $value, $expire = 300)
     {
         $_SESSION[$key] = $value;
-        $_SESSION['_POP']['expirations'][$key] = time() + (int)$expire;
+        $_SESSION['_POP_SESSION_']['expirations'][$key] = time() + (int)$expire;
         return $this;
     }
 
@@ -94,7 +94,7 @@ class Session implements \ArrayAccess
     public function setRequestValue($key, $value, $hops = 1)
     {
         $_SESSION[$key] = $value;
-        $_SESSION['_POP']['requests'][$key] = [
+        $_SESSION['_POP_SESSION_']['requests'][$key] = [
             'current' => 0,
             'limit'   => (int)$hops
         ];
@@ -142,14 +142,14 @@ class Session implements \ArrayAccess
      */
     private function init()
     {
-        if (!isset($_SESSION['_POP'])) {
-            $_SESSION['_POP'] = [
+        if (!isset($_SESSION['_POP_SESSION_'])) {
+            $_SESSION['_POP_SESSION_'] = [
                 'requests'    => [],
                 'expirations' => []
             ];
-        } else if (isset($_SESSION['_POP']) && !isset($_SESSION['_POP']['requests'])) {
-            $_SESSION['_POP']['requests']    = [];
-            $_SESSION['_POP']['expirations'] = [];
+        } else if (isset($_SESSION['_POP_SESSION_']) && !isset($_SESSION['_POP_SESSION_']['requests'])) {
+            $_SESSION['_POP_SESSION_']['requests']    = [];
+            $_SESSION['_POP_SESSION_']['expirations'] = [];
         } else {
             $this->checkRequests();
             $this->checkExpirations();
@@ -164,11 +164,11 @@ class Session implements \ArrayAccess
     private function checkRequests()
     {
         foreach ($_SESSION as $key => $value) {
-            if (isset($_SESSION['_POP']['requests'][$key])) {
-                $_SESSION['_POP']['requests'][$key]['current']++;
-                if ($_SESSION['_POP']['requests'][$key]['current'] > $_SESSION['_POP']['requests'][$key]['limit']) {
+            if (isset($_SESSION['_POP_SESSION_']['requests'][$key])) {
+                $_SESSION['_POP_SESSION_']['requests'][$key]['current']++;
+                if ($_SESSION['_POP_SESSION_']['requests'][$key]['current'] > $_SESSION['_POP_SESSION_']['requests'][$key]['limit']) {
                     unset($_SESSION[$key]);
-                    unset($_SESSION['_POP']['requests'][$key]);
+                    unset($_SESSION['_POP_SESSION_']['requests'][$key]);
                 }
             }
         }
@@ -182,9 +182,9 @@ class Session implements \ArrayAccess
     private function checkExpirations()
     {
         foreach ($_SESSION as $key => $value) {
-            if (isset($_SESSION['_POP']['expirations'][$key]) && (time() > $_SESSION['_POP']['expirations'][$key])) {
+            if (isset($_SESSION['_POP_SESSION_']['expirations'][$key]) && (time() > $_SESSION['_POP_SESSION_']['expirations'][$key])) {
                 unset($_SESSION[$key]);
-                unset($_SESSION['_POP']['expirations'][$key]);
+                unset($_SESSION['_POP_SESSION_']['expirations'][$key]);
             }
         }
     }
@@ -194,10 +194,14 @@ class Session implements \ArrayAccess
      *
      * @param  string $name
      * @param  mixed $value
+     * @throws Exception
      * @return void
      */
     public function __set($name, $value)
     {
+        if ($name == '_POP_SESSION_') {
+            throw new Exception("Error: Cannot use the reserved name '_POP_SESSION_'.");
+        }
         $_SESSION[$name] = $value;
     }
 
@@ -209,7 +213,7 @@ class Session implements \ArrayAccess
      */
     public function __get($name)
     {
-        return (isset($_SESSION[$name])) ? $_SESSION[$name] : null;
+        return (($name !== '_POP_SESSION_') && isset($_SESSION[$name])) ? $_SESSION[$name] : null;
     }
 
     /**
@@ -220,17 +224,22 @@ class Session implements \ArrayAccess
      */
     public function __isset($name)
     {
-        return isset($_SESSION[$name]);
+        return (($name !== '_POP_SESSION_') && isset($_SESSION[$name]));
     }
 
     /**
      * Unset the $_SESSION global variable
      *
      * @param  string $name
+     * @throws Exception
      * @return void
      */
     public function __unset($name)
     {
+        if ($name == '_POP_SESSION_') {
+            throw new Exception("Error: Cannot use the reserved name '_POP_SESSION_'.");
+        }
+
         $_SESSION[$name] = null;
         unset($_SESSION[$name]);
     }
