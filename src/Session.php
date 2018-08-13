@@ -114,11 +114,12 @@ class Session implements \ArrayAccess
     /**
      * Regenerate the session id
      *
+     * @param  boolean $deleteOldSession
      * @return void
      */
-    public function regenerateId($delete_old_session = true)
+    public function regenerateId($deleteOldSession = true)
     {
-        session_regenerate_id($delete_old_session);
+        session_regenerate_id($deleteOldSession);
         $this->sessionId = session_id();
     }
 
