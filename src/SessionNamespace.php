@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2019 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2020 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,9 +19,9 @@ namespace Pop\Session;
  * @category   Pop
  * @package    Pop\Session
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2019 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2020 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    3.1.4
+ * @version    3.2.0
  */
 class SessionNamespace implements \ArrayAccess
 {
@@ -134,6 +134,18 @@ class SessionNamespace implements \ArrayAccess
     }
 
     /**
+     * Kill the session namespace
+     *
+     * @return void
+     */
+    public function kill()
+    {
+        if (isset($_SESSION[$this->namespace])) {
+            unset($_SESSION[$this->namespace]);
+        }
+    }
+
+    /**
      * Check the request-based session values
      *
      * @return void
@@ -143,7 +155,9 @@ class SessionNamespace implements \ArrayAccess
         foreach ($_SESSION[$this->namespace] as $key => $value) {
             if (isset($_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key])) {
                 $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['current']++;
-                if ($_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['current'] > $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['limit']) {
+                $current = $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['current'];
+                $limit   = $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['limit'];
+                if ($current > $limit) {
                     unset($_SESSION[$this->namespace][$key]);
                     unset($_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]);
                 }
@@ -159,7 +173,8 @@ class SessionNamespace implements \ArrayAccess
     private function checkExpirations()
     {
         foreach ($_SESSION[$this->namespace] as $key => $value) {
-            if (isset($_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key]) && (time() > $_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key])) {
+            if (isset($_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key]) &&
+                (time() > $_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key])) {
                 unset($_SESSION[$this->namespace][$key]);
                 unset($_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key]);
             }

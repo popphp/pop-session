@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2019 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2020 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,9 +19,9 @@ namespace Pop\Session;
  * @category   Pop
  * @package    Pop\Session
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2019 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2020 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    3.1.4
+ * @version    3.2.0
  */
 class Session implements \ArrayAccess
 {
@@ -69,6 +69,62 @@ class Session implements \ArrayAccess
     }
 
     /**
+     * Return the current the session id
+     *
+     * @return string
+     */
+    public function getId()
+    {
+        return $this->sessionId;
+    }
+
+    /**
+     * Regenerate the session id
+     *
+     * @param  boolean $deleteOldSession
+     * @return void
+     */
+    public function regenerateId($deleteOldSession = true)
+    {
+        session_regenerate_id($deleteOldSession);
+        $this->sessionId = session_id();
+    }
+
+    /**
+     * Init the session
+     *
+     * @return void
+     */
+    private function init()
+    {
+        if (!isset($_SESSION['_POP_SESSION_'])) {
+            $_SESSION['_POP_SESSION_'] = [
+                'requests'    => [],
+                'expirations' => []
+            ];
+        } else if (isset($_SESSION['_POP_SESSION_']) && !isset($_SESSION['_POP_SESSION_']['requests'])) {
+            $_SESSION['_POP_SESSION_']['requests']    = [];
+            $_SESSION['_POP_SESSION_']['expirations'] = [];
+        } else {
+            $this->checkRequests();
+            $this->checkExpirations();
+        }
+    }
+
+    /**
+     * Destroy the session
+     *
+     * @return void
+     */
+    public function kill()
+    {
+        $_SESSION = null;
+        session_unset();
+        session_destroy();
+        unset($this->sessionId);
+    }
+
+    /**
      * Set a time-based value
      *
      * @param  string $key
@@ -102,62 +158,6 @@ class Session implements \ArrayAccess
     }
 
     /**
-     * Return the current the session id
-     *
-     * @return string
-     */
-    public function getId()
-    {
-        return $this->sessionId;
-    }
-
-    /**
-     * Regenerate the session id
-     *
-     * @param  boolean $deleteOldSession
-     * @return void
-     */
-    public function regenerateId($deleteOldSession = true)
-    {
-        session_regenerate_id($deleteOldSession);
-        $this->sessionId = session_id();
-    }
-
-    /**
-     * Destroy the session
-     *
-     * @return void
-     */
-    public function kill()
-    {
-        $_SESSION = null;
-        session_unset();
-        session_destroy();
-        unset($this->sessionId);
-    }
-
-    /**
-     * Init the session
-     *
-     * @return void
-     */
-    private function init()
-    {
-        if (!isset($_SESSION['_POP_SESSION_'])) {
-            $_SESSION['_POP_SESSION_'] = [
-                'requests'    => [],
-                'expirations' => []
-            ];
-        } else if (isset($_SESSION['_POP_SESSION_']) && !isset($_SESSION['_POP_SESSION_']['requests'])) {
-            $_SESSION['_POP_SESSION_']['requests']    = [];
-            $_SESSION['_POP_SESSION_']['expirations'] = [];
-        } else {
-            $this->checkRequests();
-            $this->checkExpirations();
-        }
-    }
-
-    /**
      * Check the request-based session values
      *
      * @return void
@@ -167,7 +167,9 @@ class Session implements \ArrayAccess
         foreach ($_SESSION as $key => $value) {
             if (isset($_SESSION['_POP_SESSION_']['requests'][$key])) {
                 $_SESSION['_POP_SESSION_']['requests'][$key]['current']++;
-                if ($_SESSION['_POP_SESSION_']['requests'][$key]['current'] > $_SESSION['_POP_SESSION_']['requests'][$key]['limit']) {
+                $current = $_SESSION['_POP_SESSION_']['requests'][$key]['current'];
+                $limit   = $_SESSION['_POP_SESSION_']['requests'][$key]['limit'];
+                if ($current > $limit) {
                     unset($_SESSION[$key]);
                     unset($_SESSION['_POP_SESSION_']['requests'][$key]);
                 }
@@ -183,7 +185,8 @@ class Session implements \ArrayAccess
     private function checkExpirations()
     {
         foreach ($_SESSION as $key => $value) {
-            if (isset($_SESSION['_POP_SESSION_']['expirations'][$key]) && (time() > $_SESSION['_POP_SESSION_']['expirations'][$key])) {
+            if (isset($_SESSION['_POP_SESSION_']['expirations'][$key]) &&
+                (time() > $_SESSION['_POP_SESSION_']['expirations'][$key])) {
                 unset($_SESSION[$key]);
                 unset($_SESSION['_POP_SESSION_']['expirations'][$key]);
             }

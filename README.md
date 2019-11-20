@@ -72,12 +72,12 @@ if (isset($sess->foo)) {
 }
 ```
 
-##### Session values available based on number of namespace:
+##### Session values available based on namespace:
 
 ```php
 use Pop\Session\SessionNamespace;
 
-$sess = new SessionNamespace(__NAMESPACE__);
+$sess = new SessionNamespace('MyApp');
 $sess->foo = 'bar'
 
 if (isset($sess->foo)) {
