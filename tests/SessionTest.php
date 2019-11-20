@@ -5,7 +5,7 @@ namespace {
     $_SESSION = [];
 }
 
-namespace Pop\Validator\Test {
+namespace Pop\Session\Test {
 
     use Pop\Session\Session;
     use PHPUnit\Framework\TestCase;
