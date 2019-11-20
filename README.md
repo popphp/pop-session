@@ -1,6 +1,9 @@
 pop-session
 ===========
 
+[![Build Status](https://travis-ci.org/popphp/pop-session.svg?branch=master)](https://travis-ci.org/popphp/pop-session)
+[![Coverage Status](http://cc.popphp.org/coverage.php?comp=pop-session)](http://cc.popphp.org/pop-session/)
+
 OVERVIEW
 --------
 `pop-session` is a component used to manage and manipulate sessions in the PHP
