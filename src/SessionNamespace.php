@@ -23,7 +23,7 @@ namespace Pop\Session;
  * @license    http://www.popphp.org/license     New BSD License
  * @version    3.2.0
  */
-class SessionNamespace implements \ArrayAccess
+class SessionNamespace extends AbstractSession
 {
 
     /**
@@ -182,6 +182,16 @@ class SessionNamespace implements \ArrayAccess
     }
 
     /**
+     * Get the session values as an array
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return (isset($_SESSION[$this->namespace])) ? $_SESSION[$this->namespace] : null;
+    }
+
+    /**
      * Set a property in the session object that is linked to the $_SESSION global variable
      *
      * @param  string $name
@@ -225,53 +235,6 @@ class SessionNamespace implements \ArrayAccess
     {
         $_SESSION[$this->namespace][$name] = null;
         unset($_SESSION[$this->namespace][$name]);
-    }
-
-    /**
-     * ArrayAccess offsetSet
-     *
-     * @param  mixed $offset
-     * @param  mixed $value
-     * @throws Exception
-     * @return void
-     */
-    public function offsetSet($offset, $value)
-    {
-        $this->__set($offset, $value);
-    }
-
-    /**
-     * ArrayAccess offsetGet
-     *
-     * @param  mixed $offset
-     * @return mixed
-     */
-    public function offsetGet($offset)
-    {
-        return $this->__get($offset);
-    }
-
-    /**
-     * ArrayAccess offsetExists
-     *
-     * @param  mixed $offset
-     * @return boolean
-     */
-    public function offsetExists($offset)
-    {
-        return $this->__isset($offset);
-    }
-
-    /**
-     * ArrayAccess offsetUnset
-     *
-     * @param  mixed $offset
-     * @throws Exception
-     * @return void
-     */
-    public function offsetUnset($offset)
-    {
-        $this->__unset($offset);
     }
 
 }

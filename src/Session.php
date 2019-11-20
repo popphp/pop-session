@@ -23,7 +23,7 @@ namespace Pop\Session;
  * @license    http://www.popphp.org/license     New BSD License
  * @version    3.2.0
  */
-class Session implements \ArrayAccess
+class Session extends AbstractSession
 {
 
     /**
@@ -194,6 +194,29 @@ class Session implements \ArrayAccess
     }
 
     /**
+     * Get the session values as an array
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        $session = $_SESSION;
+
+        if (isset($session['_POP_SESSION_'])) {
+            foreach ($session['_POP_SESSION_'] as $key => $value) {
+                if (($key != 'expirations') && ($key != 'requests')) {
+                    if (isset($session[$key])) {
+                        unset($session[$key]);
+                    }
+                }
+            }
+            unset($session['_POP_SESSION_']);
+        }
+
+        return $session;
+    }
+
+    /**
      * Set a property in the session object that is linked to the $_SESSION global variable
      *
      * @param  string $name
@@ -259,40 +282,6 @@ class Session implements \ArrayAccess
     public function offsetSet($offset, $value)
     {
         $this->__set($offset, $value);
-    }
-
-    /**
-     * ArrayAccess offsetGet
-     *
-     * @param  mixed $offset
-     * @return mixed
-     */
-    public function offsetGet($offset)
-    {
-        return $this->__get($offset);
-    }
-
-    /**
-     * ArrayAccess offsetExists
-     *
-     * @param  mixed $offset
-     * @return boolean
-     */
-    public function offsetExists($offset)
-    {
-        return $this->__isset($offset);
-    }
-
-    /**
-     * ArrayAccess offsetUnset
-     *
-     * @param  mixed $offset
-     * @throws Exception
-     * @return void
-     */
-    public function offsetUnset($offset)
-    {
-        $this->__unset($offset);
     }
 
 }
