@@ -8,6 +8,7 @@ namespace {
 namespace Pop\Session\Test {
 
     use Pop\Session\Session;
+    use Pop\Session\SessionNamespace;
     use PHPUnit\Framework\TestCase;
 
     class SessionTest extends TestCase
@@ -28,6 +29,15 @@ namespace Pop\Session\Test {
             $this->assertTrue(isset($sess['foo']));
             $this->assertTrue(isset($sess->baz));
             $this->assertTrue(isset($sess['baz']));
+            $nsSess = new SessionNamespace('MyApp');
+            $this->assertEquals(2, count($sess->toArray()));
+            $this->assertEquals(2, $sess->count());
+
+            $i = 0;
+            foreach ($sess as $s) {
+                $i++;
+            }
+            $this->assertEquals(2, $i);
 
             unset($sess->foo);
             unset($sess['baz']);

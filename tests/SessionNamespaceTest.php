@@ -33,6 +33,9 @@ namespace Pop\Session\Test {
             $this->assertTrue(isset($sess->baz));
             $this->assertTrue(isset($sess['baz']));
 
+            $this->assertEquals(2, count($sess->toArray()));
+            $this->assertEquals(2, $sess->count());
+
             unset($sess->foo);
             unset($sess['baz']);
 
