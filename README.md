@@ -1,7 +1,7 @@
 pop-session
 ===========
 
-[![Build Status](https://travis-ci.org/popphp/pop-session.svg?branch=master)](https://travis-ci.org/popphp/pop-session)
+[![Build Status](https://github.com/popphp/pop-session/workflows/phpunit/badge.svg)](https://github.com/popphp/pop-session/actions)
 [![Coverage Status](http://cc.popphp.org/coverage.php?comp=pop-session)](http://cc.popphp.org/pop-session/)
 
 OVERVIEW
