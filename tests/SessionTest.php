@@ -64,6 +64,7 @@ namespace Pop\Session\Test {
         {
             $sess = Session::getInstance();
             $this->assertNotEmpty($sess->getId());
+            $this->assertNotEmpty($sess->getName());
         }
 
         public function testRegenerateId()
@@ -71,6 +72,7 @@ namespace Pop\Session\Test {
             $sess = Session::getInstance();
             $sess->regenerateId();
             $this->assertNotEmpty($sess->getId());
+            $this->assertNotEmpty($sess->getName());
         }
 
         public function testSetTimedValue1()

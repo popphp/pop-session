@@ -33,6 +33,12 @@ class Session extends AbstractSession
     private static $instance = null;
 
     /**
+     * Session Name
+     * @var string
+     */
+    private $sessionName = null;
+
+    /**
      * Session ID
      * @var string
      */
@@ -41,14 +47,35 @@ class Session extends AbstractSession
     /**
      * Constructor
      *
+     * @param array $options
+     *
      * Private method to instantiate the session object
      */
-    private function __construct()
+    private function __construct(array $options = [])
     {
         // Start a session and set the session id.
         if (session_id() == '') {
+            if (!empty($options)) {
+                $sessionParams = session_get_cookie_params();
+                $lifetime      = $options['lifetime'] ?? $sessionParams['lifetime'];
+                $path          = $options['path']     ?? $sessionParams['lifetime'];
+                $domain        = $options['domain']   ?? $sessionParams['domain'];
+                $secure        = $options['secure']   ??  $sessionParams['secure'];
+                $httponly      = $options['httponly'] ??  $sessionParams['httponly'];
+                $sameSite      = $options['samesite'] ??  $sessionParams['samesite'];
+
+                session_set_cookie_params([
+                    'lifetime' => $lifetime,
+                    'path'     => $path,
+                    'domain'   => $domain,
+                    'secure'   => $secure,
+                    'httponly' => $httponly,
+                    'samesite' => $sameSite
+                ]);
+            }
             session_start();
-            $this->sessionId = session_id();
+            $this->sessionId   = session_id();
+            $this->sessionName = session_name();
             $this->init();
         }
     }
@@ -57,15 +84,26 @@ class Session extends AbstractSession
      * Determine whether or not an instance of the session object exists already,
      * and instantiate the object if it does not exist.
      *
+     * @param  array $options
      * @return Session
      */
-    public static function getInstance()
+    public static function getInstance(array $options = [])
     {
         if (null === self::$instance) {
-            self::$instance = new Session();
+            self::$instance = new Session($options);
         }
 
         return self::$instance;
+    }
+
+    /**
+     * Return the current the session name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->sessionName;
     }
 
     /**
@@ -87,7 +125,8 @@ class Session extends AbstractSession
     public function regenerateId($deleteOldSession = true)
     {
         session_regenerate_id($deleteOldSession);
-        $this->sessionId = session_id();
+        $this->sessionId   = session_id();
+        $this->sessionName = session_name();
     }
 
     /**
@@ -118,6 +157,11 @@ class Session extends AbstractSession
      */
     public function kill()
     {
+        if (!empty($this->sessionName) && !empty($this->sessionId) &&
+            isset($_COOKIE[$this->sessionName]) && ($_COOKIE[$this->sessionName] == $this->sessionId)) {
+            setcookie($this->sessionName, $this->sessionId, time() - 3600);
+        }
+
         $_SESSION = null;
         session_unset();
         session_destroy();
