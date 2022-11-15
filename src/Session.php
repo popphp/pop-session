@@ -323,7 +323,7 @@ class Session extends AbstractSession
      * @throws Exception
      * @return void
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->__set($offset, $value);
     }

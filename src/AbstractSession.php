@@ -13,6 +13,8 @@
  */
 namespace Pop\Session;
 
+use ReturnTypeWillChange;
+
 /**
  * Abstract session class
  *
@@ -58,7 +60,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
 
         return count($this->toArray());
@@ -69,7 +71,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      *
      * @return \ArrayIterator
      */
-    public function getIterator()
+    public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->toArray());
     }
@@ -121,6 +123,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * @param  mixed $value
      * @return void
      */
+    #[ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         $this->__set($offset, $value);
@@ -132,6 +135,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * @param  mixed $offset
      * @return mixed
      */
+    #[ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->__get($offset);
@@ -143,7 +147,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * @param  mixed $offset
      * @return boolean
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return $this->__isset($offset);
     }
@@ -154,6 +158,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * @param  mixed $offset
      * @return void
      */
+    #[ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         $this->__unset($offset);
