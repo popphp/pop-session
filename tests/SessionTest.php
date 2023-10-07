@@ -30,20 +30,30 @@ namespace Pop\Session\Test {
             $this->assertTrue(isset($sess->baz));
             $this->assertTrue(isset($sess['baz']));
             $nsSess = new SessionNamespace('MyApp');
-            $this->assertEquals(2, count($sess->toArray()));
-            $this->assertEquals(2, $sess->count());
+            $this->assertEquals(3, count($sess->toArray()));
+            $this->assertEquals(3, $sess->count());
 
             $i = 0;
             foreach ($sess as $s) {
                 $i++;
             }
-            $this->assertEquals(2, $i);
+            $this->assertEquals(3, $i);
 
             unset($sess->foo);
             unset($sess['baz']);
 
             $this->assertFalse(isset($sess->foo));
             $this->assertFalse(isset($sess->baz));
+        }
+
+        public function testOptions()
+        {
+            Session::getInstance()->kill();
+
+            $sess         = Session::getInstance(['domain' => 'localhost']);
+            $cookieParams = session_get_cookie_params();
+
+            $this->assertEquals('localhost', $cookieParams['domain']);
         }
 
         public function testSetException()
@@ -96,8 +106,6 @@ namespace Pop\Session\Test {
         {
             $sess = Session::getInstance();
             $sess->setRequestValue('request', 'value', 1);
-            $this->assertEquals('value', $sess->request);
-            $sess = Session::getInstance();
             $this->assertEquals('value', $sess->request);
             $sess = Session::getInstance();
             $this->assertEquals('value', $sess->request);

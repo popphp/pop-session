@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,18 +19,18 @@ namespace Pop\Session;
  * @category   Pop
  * @package    Pop\Session
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    3.3.0
+ * @version    4.0.0
  */
 class SessionNamespace extends AbstractSession
 {
 
     /**
      * Session namespace
-     * @var string
+     * @var ?string
      */
-    private $namespace = null;
+    private ?string $namespace = null;
 
     /**
      * Constructor
@@ -40,7 +40,7 @@ class SessionNamespace extends AbstractSession
      * @param  string $namespace
      * @throws Exception
      */
-    public function __construct($namespace)
+    public function __construct(string $namespace)
     {
         if ($namespace == '_POP_SESSION_') {
             throw new Exception("Error: Cannot use the reserved namespace '_POP_SESSION_'.");
@@ -59,7 +59,7 @@ class SessionNamespace extends AbstractSession
      * @param  string $namespace
      * @return SessionNamespace
      */
-    public function setNamespace($namespace)
+    public function setNamespace(string $namespace): SessionNamespace
     {
         $this->namespace = $namespace;
         return $this;
@@ -70,7 +70,7 @@ class SessionNamespace extends AbstractSession
      *
      * @return string
      */
-    public function getNamespace()
+    public function getNamespace(): string
     {
         return $this->namespace;
     }
@@ -83,7 +83,7 @@ class SessionNamespace extends AbstractSession
      * @param  int    $expire
      * @return SessionNamespace
      */
-    public function setTimedValue($key, $value, $expire = 300)
+    public function setTimedValue(string $key, mixed $value, int $expire = 300): SessionNamespace
     {
         $_SESSION[$this->namespace][$key] = $value;
         $_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key] = time() + (int)$expire;
@@ -98,7 +98,7 @@ class SessionNamespace extends AbstractSession
      * @param  int    $hops
      * @return SessionNamespace
      */
-    public function setRequestValue($key, $value, $hops = 1)
+    public function setRequestValue(string $key, mixed $value, int $hops = 1): SessionNamespace
     {
         $_SESSION[$this->namespace][$key] = $value;
         $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key] = [
@@ -113,7 +113,7 @@ class SessionNamespace extends AbstractSession
      *
      * @return void
      */
-    private function init()
+    private function init(): void
     {
         if (!isset($_SESSION['_POP_SESSION_'])) {
             $_SESSION['_POP_SESSION_'] = [
@@ -136,12 +136,39 @@ class SessionNamespace extends AbstractSession
     /**
      * Kill the session namespace
      *
+     * @param  bool $all
      * @return void
      */
-    public function kill()
+    public function kill(bool $all = false): void
     {
-        if (isset($_SESSION[$this->namespace])) {
-            unset($_SESSION[$this->namespace]);
+        if ($all) {
+            $sess = Session::getInstance();
+            $sess->kill();
+        } else if (isset($_SESSION[$this->namespace])) {
+            if (isset($_SESSION['_POP_SESSION_'][$this->namespace])) {
+                unset($_SESSION['_POP_SESSION_'][$this->namespace]);
+            }
+            if (isset($_SESSION[$this->namespace])) {
+                unset($_SESSION[$this->namespace]);
+            }
+        }
+    }
+
+    /**
+     * Check the request-based session value
+     *
+     * @return void
+     */
+    private function checkRequest($key): void
+    {
+        if (isset($_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key])) {
+            $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['current']++;
+            $current = $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['current'];
+            $limit   = $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['limit'];
+            if ($current > $limit) {
+                unset($_SESSION[$this->namespace][$key]);
+                unset($_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]);
+            }
         }
     }
 
@@ -150,18 +177,24 @@ class SessionNamespace extends AbstractSession
      *
      * @return void
      */
-    private function checkRequests()
+    private function checkRequests(): void
     {
         foreach ($_SESSION[$this->namespace] as $key => $value) {
-            if (isset($_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key])) {
-                $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['current']++;
-                $current = $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['current'];
-                $limit   = $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['limit'];
-                if ($current > $limit) {
-                    unset($_SESSION[$this->namespace][$key]);
-                    unset($_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]);
-                }
-            }
+            $this->checkRequest($key);
+        }
+    }
+
+    /**
+     * Check the time-based session value
+     *
+     * @return void
+     */
+    private function checkExpiration($key): void
+    {
+        if (isset($_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key]) &&
+            (time() > $_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key])) {
+            unset($_SESSION[$this->namespace][$key]);
+            unset($_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key]);
         }
     }
 
@@ -170,14 +203,10 @@ class SessionNamespace extends AbstractSession
      *
      * @return void
      */
-    private function checkExpirations()
+    private function checkExpirations(): void
     {
         foreach ($_SESSION[$this->namespace] as $key => $value) {
-            if (isset($_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key]) &&
-                (time() > $_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key])) {
-                unset($_SESSION[$this->namespace][$key]);
-                unset($_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key]);
-            }
+            $this->checkExpiration($key);
         }
     }
 
@@ -186,9 +215,15 @@ class SessionNamespace extends AbstractSession
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
-        return (isset($_SESSION[$this->namespace])) ? $_SESSION[$this->namespace] : null;
+        $session = $_SESSION;
+
+        if (isset($session['_POP_SESSION_'])) {
+            unset($session['_POP_SESSION_']);
+        }
+
+        return $session[$this->namespace] ?? [];
     }
 
     /**
@@ -198,7 +233,7 @@ class SessionNamespace extends AbstractSession
      * @param  mixed $value
      * @return void
      */
-    public function __set($name, $value)
+    public function __set(string $name, mixed $value): void
     {
         $_SESSION[$this->namespace][$name] = $value;
     }
@@ -209,7 +244,7 @@ class SessionNamespace extends AbstractSession
      * @param  string $name
      * @return mixed
      */
-    public function __get($name)
+    public function __get(string $name): mixed
     {
         return (isset($_SESSION[$this->namespace][$name])) ? $_SESSION[$this->namespace][$name] : null;
     }
@@ -218,9 +253,9 @@ class SessionNamespace extends AbstractSession
      * Return the isset value of the $_SESSION global variable
      *
      * @param  string $name
-     * @return boolean
+     * @return bool
      */
-    public function __isset($name)
+    public function __isset(string $name): bool
     {
         return isset($_SESSION[$this->namespace][$name]);
     }
@@ -231,7 +266,7 @@ class SessionNamespace extends AbstractSession
      * @param  string $name
      * @return void
      */
-    public function __unset($name)
+    public function __unset(string $name): void
     {
         $_SESSION[$this->namespace][$name] = null;
         unset($_SESSION[$this->namespace][$name]);

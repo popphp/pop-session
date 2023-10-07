@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -13,7 +13,10 @@
  */
 namespace Pop\Session;
 
-use ReturnTypeWillChange;
+use ArrayAccess;
+use ArrayIterator;
+use Countable;
+use IteratorAggregate;
 
 /**
  * Abstract session class
@@ -21,11 +24,11 @@ use ReturnTypeWillChange;
  * @category   Pop
  * @package    Pop\Session
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    3.3.0
+ * @version    4.0.0
  */
-abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Countable, \IteratorAggregate
+abstract class AbstractSession implements SessionInterface, ArrayAccess, Countable, IteratorAggregate
 {
 
     /**
@@ -33,7 +36,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      *
      * @return void
      */
-    abstract public function kill();
+    abstract public function kill(): void;
 
     /**
      * Set a time-based value
@@ -43,7 +46,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * @param  int    $expire
      * @return AbstractSession
      */
-    abstract public function setTimedValue($key, $value, $expire = 300);
+    abstract public function setTimedValue(string $key, mixed $value, int $expire = 300): AbstractSession;
 
     /**
      * Set a request-based value
@@ -53,7 +56,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * @param  int    $hops
      * @return AbstractSession
      */
-    abstract public function setRequestValue($key, $value, $hops = 1);
+    abstract public function setRequestValue(string $key, mixed $value, int $hops = 1): AbstractSession;
 
     /**
      * Method to get the count of data in the session
@@ -69,11 +72,11 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
     /**
      * Method to iterate over the session
      *
-     * @return \ArrayIterator
+     * @return ArrayIterator
      */
-    public function getIterator(): \ArrayIterator
+    public function getIterator(): ArrayIterator
     {
-        return new \ArrayIterator($this->toArray());
+        return new ArrayIterator($this->toArray());
     }
 
     /**
@@ -81,7 +84,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      *
      * @return array
      */
-    abstract public function toArray();
+    abstract public function toArray(): array;
 
     /**
      * Magic get method to return the value of values[$name].
@@ -89,7 +92,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * @param  string $name
      * @return mixed
      */
-    abstract public function __get($name);
+    abstract public function __get(string $name): mixed;
 
     /**
      * Magic set method to set values[$name].
@@ -98,15 +101,15 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * @param  mixed $value
      * @return void
      */
-    abstract public function __set($name, $value);
+    abstract public function __set(string $name, mixed $value): void;
 
     /**
      * Return the isset value of values[$name].
      *
      * @param  string $name
-     * @return boolean
+     * @return bool
      */
-    abstract public function __isset($name);
+    abstract public function __isset(string $name): bool;
 
     /**
      * Unset values[$name].
@@ -114,7 +117,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * @param  string $name
      * @return void
      */
-    abstract public function __unset($name);
+    abstract public function __unset(string $name): void;
 
     /**
      * ArrayAccess offsetSet
@@ -123,8 +126,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * @param  mixed $value
      * @return void
      */
-    #[ReturnTypeWillChange]
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->__set($offset, $value);
     }
@@ -135,8 +137,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * @param  mixed $offset
      * @return mixed
      */
-    #[ReturnTypeWillChange]
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->__get($offset);
     }
@@ -145,9 +146,9 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * ArrayAccess offsetExists
      *
      * @param  mixed $offset
-     * @return boolean
+     * @return bool
      */
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return $this->__isset($offset);
     }
@@ -158,8 +159,7 @@ abstract class AbstractSession implements SessionInterface, \ArrayAccess, \Count
      * @param  mixed $offset
      * @return void
      */
-    #[ReturnTypeWillChange]
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset): void
     {
         $this->__unset($offset);
     }

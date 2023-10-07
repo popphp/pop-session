@@ -49,7 +49,6 @@ namespace Pop\Session\Test {
             $sess = new SessionNamespace('_POP_SESSION_');
         }
 
-
         public function testSetTimedValue1()
         {
             $sess = new SessionNamespace('MyApp');

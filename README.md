@@ -18,6 +18,13 @@ Install `pop-session` using Composer.
 
     composer require popphp/pop-session
 
+Or, require it in your composer.json file
+
+    "require": {
+        "popphp/pop-session" : "4.0.*"
+    }
+
+
 BASIC USAGE
 -----------
 

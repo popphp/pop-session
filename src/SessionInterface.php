@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
  */
 
@@ -19,9 +19,9 @@ namespace Pop\Session;
  * @category   Pop
  * @package    Pop\Session
  * @author     Nick Sagona, III <dev@nolainteractive.com>
- * @copyright  Copyright (c) 2009-2023 NOLA Interactive, LLC. (http://www.nolainteractive.com)
+ * @copyright  Copyright (c) 2009-2024 NOLA Interactive, LLC. (http://www.nolainteractive.com)
  * @license    http://www.popphp.org/license     New BSD License
- * @version    3.3.0
+ * @version    4.0.0
  */
 interface SessionInterface
 {
@@ -31,7 +31,7 @@ interface SessionInterface
      *
      * @return void
      */
-    public function kill();
+    public function kill(): void;
 
     /**
      * Set a time-based value
@@ -41,7 +41,7 @@ interface SessionInterface
      * @param  int    $expire
      * @return SessionInterface
      */
-    public function setTimedValue($key, $value, $expire = 300);
+    public function setTimedValue(string $key, mixed $value, int $expire = 300): SessionInterface;
 
     /**
      * Set a request-based value
@@ -51,6 +51,6 @@ interface SessionInterface
      * @param  int    $hops
      * @return SessionInterface
      */
-    public function setRequestValue($key, $value, $hops = 1);
+    public function setRequestValue(string $key, mixed $value, int $hops = 1): SessionInterface;
 
 }
