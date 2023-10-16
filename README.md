@@ -21,7 +21,7 @@ Install `pop-session` using Composer.
 Or, require it in your composer.json file
 
     "require": {
-        "popphp/pop-session" : "4.0.*"
+        "popphp/pop-session" : "^4.0.0"
     }
 
 
