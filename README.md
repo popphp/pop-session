@@ -17,7 +17,7 @@ pop-session
 Overview
 --------
 `pop-session` is a component used to manage sessions and session data in the PHP web environment.
-It includes a layer to also manage namespaces within the session as well as timed-based and
+It includes the ability to also manage namespaces within the session as well as timed-based and
 request-based expirations.
 
 `pop-session` is a component of the [Pop PHP Framework](http://www.popphp.org/).
