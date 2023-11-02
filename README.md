@@ -113,7 +113,7 @@ $sess->setRequestValue('foo', 'bar', 1); // # of requests
 ```
 
 Then, the next request will be successful if it's within the set limit
-of number requests allowed before that session data is erased:
+of number requests allowed before that session data is expired:
 
 ```php
 if (isset($sess->foo)) {
