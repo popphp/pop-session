@@ -22,6 +22,8 @@ request-based expirations.
 
 `pop-session` is a component of the [Pop PHP Framework](http://www.popphp.org/).
 
+[Top](#pop-session)
+
 Install
 -------
 
