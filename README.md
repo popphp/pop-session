@@ -4,7 +4,6 @@ pop-session
 [![Build Status](https://github.com/popphp/pop-session/workflows/phpunit/badge.svg)](https://github.com/popphp/pop-session/actions)
 [![Coverage Status](http://cc.popphp.org/coverage.php?comp=pop-session)](http://cc.popphp.org/pop-session/)
 
-[![Join the chat at https://popphp.slack.com](https://media.popphp.org/img/slack.svg)](https://popphp.slack.com)
 [![Join the chat at https://discord.gg/TZjgT74U7E](https://media.popphp.org/img/discord.svg)](https://discord.gg/TZjgT74U7E)
 
 * [Overview](#overview)
@@ -20,7 +19,7 @@ Overview
 It includes the ability to also manage namespaces within the session as well as timed-based and
 request-based expirations.
 
-`pop-session` is a component of the [Pop PHP Framework](http://www.popphp.org/).
+`pop-session` is a component of the [Pop PHP Framework](https://www.popphp.org/).
 
 [Top](#pop-session)
 
