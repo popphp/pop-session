@@ -93,6 +93,9 @@ class Session extends AbstractSession
             self::$instance = new Session($options);
         }
 
+        self::$instance->checkRequests();
+        self::$instance->checkExpirations();
+
         return self::$instance;
     }
 

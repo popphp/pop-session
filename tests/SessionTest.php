@@ -92,9 +92,7 @@ namespace Pop\Session\Test {
             $this->assertEquals('value', $sess->timed);
         }
 
-        /**
-         * @runInSeparateProcess
-         */
+        #[runInSeparateProcess]
         public function testSetTimedValue2()
         {
             sleep(3);
@@ -111,9 +109,7 @@ namespace Pop\Session\Test {
             $this->assertEquals('value', $sess->request);
         }
 
-        /**
-         * @runInSeparateProcess
-         */
+        #[runInSeparateProcess]
         public function testRequestValue2()
         {
             $sess = Session::getInstance();
