@@ -91,10 +91,10 @@ class Session extends AbstractSession
     {
         if (null === self::$instance) {
             self::$instance = new Session($options);
+        } else {
+            self::$instance->checkRequests();
+            self::$instance->checkExpirations();
         }
-
-        self::$instance->checkRequests();
-        self::$instance->checkExpirations();
 
         return self::$instance;
     }
