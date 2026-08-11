@@ -8,6 +8,7 @@ namespace {
 namespace Pop\Session\Test {
 
     use Pop\Session\SessionNamespace;
+    use PHPUnit\Framework\Attributes\RunInSeparateProcess;
     use PHPUnit\Framework\TestCase;
 
     class SessionNamespaceTest extends TestCase
@@ -15,6 +16,9 @@ namespace Pop\Session\Test {
 
         public function testSessionNamespace()
         {
+            $sess = new SessionNamespace('MyApp');
+            $sess->kill();
+
             $sess = new SessionNamespace('MyApp');
             $this->assertInstanceOf('Pop\Session\SessionNamespace', $sess);
             $this->assertTrue(isset($_SESSION['MyApp']));
@@ -41,6 +45,14 @@ namespace Pop\Session\Test {
 
             $this->assertFalse(isset($sess->foo));
             $this->assertFalse(isset($sess->baz));
+        }
+
+        public function testJsonSerialize()
+        {
+            $sess      = new SessionNamespace('MyApp');
+            $sess->foo = 'bar';
+
+            $this->assertEquals(json_encode($sess->toArray()), json_encode($sess));
         }
 
         public function testSessionNamespaceException()
@@ -82,11 +94,63 @@ namespace Pop\Session\Test {
             $this->assertFalse(isset($sess->request));
         }
 
+        public function testSweepRequestValue()
+        {
+            $sess = new SessionNamespace('MyApp');
+            $sess->setRequestValue('sweepRequest', 'value', 1);
+            $this->assertEquals('value', $sess->sweepRequest);
+
+            $sess->sweep();
+            $this->assertEquals('value', $sess->sweepRequest);
+
+            $sess->sweep();
+            $this->assertFalse(isset($sess->sweepRequest));
+        }
+
+        public function testSweepTimedValue()
+        {
+            $sess = new SessionNamespace('MyApp');
+            $sess->setTimedValue('sweepTimed', 'value', 1);
+            $this->assertEquals('value', $sess->sweepTimed);
+
+            sleep(2);
+            $sess->sweep();
+            $this->assertFalse(isset($sess->sweepTimed));
+        }
+
         public function testKill()
         {
             $sess = new SessionNamespace('MyApp');
             $sess->kill();
             $this->assertFalse(isset($_SESSION['MyApp']));
+        }
+
+        public function testSweepAfterKill()
+        {
+            $sess = new SessionNamespace('MyApp');
+            $sess->kill();
+            $sess->sweep();
+            $this->assertInstanceOf('Pop\Session\SessionNamespace', $sess);
+        }
+
+        #[runInSeparateProcess]
+        public function testInitRecreatesMissingBookkeeping()
+        {
+            new SessionNamespace('MyApp');
+            unset($_SESSION['_POP_SESSION_']);
+
+            new SessionNamespace('MyApp');
+
+            $this->assertTrue(isset($_SESSION['_POP_SESSION_']['MyApp']));
+        }
+
+        #[runInSeparateProcess]
+        public function testKillAll()
+        {
+            $sess = new SessionNamespace('MyApp');
+            $sess->kill(true);
+
+            $this->assertNull($_SESSION);
         }
 
     }

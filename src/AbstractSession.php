@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
  */
 
@@ -17,6 +17,7 @@ use ArrayAccess;
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
+use JsonSerializable;
 
 /**
  * Abstract session class
@@ -24,11 +25,11 @@ use IteratorAggregate;
  * @category   Pop
  * @package    Pop\Session
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
- * @version    4.0.4
+ * @version    5.0.0
  */
-abstract class AbstractSession implements SessionInterface, ArrayAccess, Countable, IteratorAggregate
+abstract class AbstractSession implements SessionInterface, ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
 
     /**
@@ -85,6 +86,81 @@ abstract class AbstractSession implements SessionInterface, ArrayAccess, Countab
      * @return array
      */
     abstract public function toArray(): array;
+
+    /**
+     * Get the session values for JSON serialization
+     *
+     * @return array
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * Check a single request-based value against its hop limit, removing it once the limit is exceeded
+     *
+     * @param  string $key
+     * @param  array  $data
+     * @param  array  $bookkeeping
+     * @return void
+     */
+    protected function checkRequestValue(string $key, array &$data, array &$bookkeeping): void
+    {
+        if (isset($bookkeeping['requests'][$key])) {
+            $bookkeeping['requests'][$key]['current']++;
+            $current = $bookkeeping['requests'][$key]['current'];
+            $limit   = $bookkeeping['requests'][$key]['limit'];
+            if ($current > $limit) {
+                unset($data[$key]);
+                unset($bookkeeping['requests'][$key]);
+            }
+        }
+    }
+
+    /**
+     * Check all request-based values against their hop limits
+     *
+     * @param  array $data
+     * @param  array $bookkeeping
+     * @return void
+     */
+    protected function checkRequestValues(array &$data, array &$bookkeeping): void
+    {
+        foreach ($data as $key => $value) {
+            $this->checkRequestValue($key, $data, $bookkeeping);
+        }
+    }
+
+    /**
+     * Check a single time-based value against its expiration, removing it once expired
+     *
+     * @param  string $key
+     * @param  array  $data
+     * @param  array  $bookkeeping
+     * @return void
+     */
+    protected function checkExpirationValue(string $key, array &$data, array &$bookkeeping): void
+    {
+        if (isset($bookkeeping['expirations'][$key]) && (time() > $bookkeeping['expirations'][$key])) {
+            unset($data[$key]);
+            unset($bookkeeping['expirations'][$key]);
+        }
+    }
+
+    /**
+     * Check all time-based values against their expirations
+     *
+     * @param  array $data
+     * @param  array $bookkeeping
+     * @return void
+     */
+    protected function checkExpirationValues(array &$data, array &$bookkeeping): void
+    {
+        foreach ($data as $key => $value) {
+            $this->checkExpirationValue($key, $data, $bookkeeping);
+        }
+    }
 
     /**
      * Magic get method to return the value of values[$name].

@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
  */
 
@@ -13,15 +13,17 @@
  */
 namespace Pop\Session;
 
+use SessionHandlerInterface;
+
 /**
  * Session class
  *
  * @category   Pop
  * @package    Pop\Session
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
- * @version    4.0.4
+ * @version    5.0.0
  */
 class Session extends AbstractSession
 {
@@ -31,6 +33,12 @@ class Session extends AbstractSession
      * @var ?object
      */
     private static ?object $instance = null;
+
+    /**
+     * Custom session save handler
+     * @var ?SessionHandlerInterface
+     */
+    private static ?SessionHandlerInterface $handler = null;
 
     /**
      * Session Name
@@ -53,31 +61,30 @@ class Session extends AbstractSession
      */
     private function __construct(array $options = [])
     {
-        // Start a session and set the session id.
+        // Start a session if one isn't already active.
         if (session_id() == '') {
-            if (!empty($options)) {
-                $sessionParams = session_get_cookie_params();
-                $lifetime      = $options['lifetime'] ?? $sessionParams['lifetime'];
-                $path          = $options['path']     ?? $sessionParams['lifetime'];
-                $domain        = $options['domain']   ?? $sessionParams['domain'];
-                $secure        = $options['secure']   ??  $sessionParams['secure'];
-                $httponly      = $options['httponly'] ??  $sessionParams['httponly'];
-                $sameSite      = $options['samesite'] ??  $sessionParams['samesite'];
+            $sessionParams = session_get_cookie_params();
+            $strictMode    = $options['strict_mode'] ?? true;
 
-                session_set_cookie_params([
-                    'lifetime' => $lifetime,
-                    'path'     => $path,
-                    'domain'   => $domain,
-                    'secure'   => $secure,
-                    'httponly' => $httponly,
-                    'samesite' => $sameSite
-                ]);
+            session_set_cookie_params([
+                'lifetime' => $options['lifetime'] ?? $sessionParams['lifetime'],
+                'path'     => $options['path']     ?? $sessionParams['path'],
+                'domain'   => $options['domain']   ?? $sessionParams['domain'],
+                'secure'   => $options['secure']   ?? $sessionParams['secure'],
+                'httponly' => $options['httponly'] ?? true,
+                'samesite' => $options['samesite'] ?? ($sessionParams['samesite'] ?: 'Lax')
+            ]);
+
+            if (self::$handler !== null) {
+                session_set_save_handler(self::$handler, true);
             }
-            session_start();
-            $this->sessionId   = session_id();
-            $this->sessionName = session_name();
-            $this->init();
+
+            session_start(['use_strict_mode' => $strictMode ? '1' : '0']);
         }
+
+        $this->sessionId   = session_id();
+        $this->sessionName = session_name();
+        $this->init();
     }
 
     /**
@@ -92,11 +99,29 @@ class Session extends AbstractSession
         if (null === self::$instance) {
             self::$instance = new Session($options);
         } else {
-            self::$instance->checkRequests();
-            self::$instance->checkExpirations();
+            self::$instance->sweep();
         }
 
         return self::$instance;
+    }
+
+    /**
+     * Set a custom session save handler
+     *
+     * Must be called before the first Session::getInstance() call, and before any
+     * other code has called session_start() — a save handler has no effect once a
+     * session is already active.
+     *
+     * @param  SessionHandlerInterface $handler
+     * @throws Exception
+     * @return void
+     */
+    public static function setHandler(SessionHandlerInterface $handler): void
+    {
+        if ((self::$instance !== null) || (session_status() === PHP_SESSION_ACTIVE)) {
+            throw new Exception("Error: Cannot set the session handler after the session has already started.");
+        }
+        self::$handler = $handler;
     }
 
     /**
@@ -148,8 +173,7 @@ class Session extends AbstractSession
             $_SESSION['_POP_SESSION_']['requests']    = [];
             $_SESSION['_POP_SESSION_']['expirations'] = [];
         } else {
-            $this->checkRequests();
-            $this->checkExpirations();
+            $this->sweep();
         }
     }
 
@@ -165,12 +189,24 @@ class Session extends AbstractSession
             setcookie($this->sessionName, $this->sessionId, time() - 3600);
         }
 
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_unset();
+            session_destroy();
+        }
         $_SESSION = null;
-        session_unset();
-        session_destroy();
         self::$instance    = null;
         $this->sessionId   = null;
         $this->sessionName = null;
+    }
+
+    /**
+     * Close the session for writing, releasing the session lock without ending the session
+     *
+     * @return void
+     */
+    public function close(): void
+    {
+        session_write_close();
     }
 
     /**
@@ -207,59 +243,18 @@ class Session extends AbstractSession
     }
 
     /**
-     * Check the request-based session value
+     * Manually check request-based and time-based values, removing any that have
+     * expired or exceeded their hop limit
      *
-     * @return void
+     * @return Session
      */
-    private function checkRequest($key): void
+    public function sweep(): Session
     {
-        if (isset($_SESSION['_POP_SESSION_']['requests'][$key])) {
-            $_SESSION['_POP_SESSION_']['requests'][$key]['current']++;
-            $current = $_SESSION['_POP_SESSION_']['requests'][$key]['current'];
-            $limit   = $_SESSION['_POP_SESSION_']['requests'][$key]['limit'];
-            if ($current > $limit) {
-                unset($_SESSION[$key]);
-                unset($_SESSION['_POP_SESSION_']['requests'][$key]);
-            }
+        if (isset($_SESSION['_POP_SESSION_'])) {
+            $this->checkRequestValues($_SESSION, $_SESSION['_POP_SESSION_']);
+            $this->checkExpirationValues($_SESSION, $_SESSION['_POP_SESSION_']);
         }
-    }
-
-    /**
-     * Check the request-based session values
-     *
-     * @return void
-     */
-    private function checkRequests(): void
-    {
-        foreach ($_SESSION as $key => $value) {
-            $this->checkRequest($key);
-        }
-    }
-
-    /**
-     * Check the time-based session value
-     *
-     * @return void
-     */
-    private function checkExpiration($key): void
-    {
-        if (isset($_SESSION['_POP_SESSION_']['expirations'][$key]) &&
-            (time() > $_SESSION['_POP_SESSION_']['expirations'][$key])) {
-            unset($_SESSION[$key]);
-            unset($_SESSION['_POP_SESSION_']['expirations'][$key]);
-        }
-    }
-
-    /**
-     * Check the time-based session values
-     *
-     * @return void
-     */
-    private function checkExpirations(): void
-    {
-        foreach ($_SESSION as $key => $value) {
-            $this->checkExpiration($key);
-        }
+        return $this;
     }
 
     /**

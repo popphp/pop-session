@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
  */
 
@@ -19,9 +19,9 @@ namespace Pop\Session;
  * @category   Pop
  * @package    Pop\Session
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
- * @version    4.0.4
+ * @version    5.0.0
  */
 interface SessionInterface
 {
@@ -52,5 +52,13 @@ interface SessionInterface
      * @return SessionInterface
      */
     public function setRequestValue(string $key, mixed $value, int $hops = 1): SessionInterface;
+
+    /**
+     * Check request-based and time-based values, removing any that have expired
+     * or exceeded their hop limit
+     *
+     * @return SessionInterface
+     */
+    public function sweep(): SessionInterface;
 
 }

@@ -4,7 +4,7 @@
  *
  * @link       https://github.com/popphp/popphp-framework
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
  */
 
@@ -19,9 +19,9 @@ namespace Pop\Session;
  * @category   Pop
  * @package    Pop\Session
  * @author     Nick Sagona, III <dev@noladev.com>
- * @copyright  Copyright (c) 2009-2026 NOLA Interactive, LLC.
+ * @copyright  Copyright (c) 2009-2027 NOLA Interactive, LLC.
  * @license    https://www.popphp.org/license     New BSD License
- * @version    4.0.4
+ * @version    5.0.0
  */
 class SessionNamespace extends AbstractSession
 {
@@ -109,6 +109,21 @@ class SessionNamespace extends AbstractSession
     }
 
     /**
+     * Manually check request-based and time-based values, removing any that have
+     * expired or exceeded their hop limit
+     *
+     * @return SessionNamespace
+     */
+    public function sweep(): SessionNamespace
+    {
+        if (isset($_SESSION[$this->namespace], $_SESSION['_POP_SESSION_'][$this->namespace])) {
+            $this->checkRequestValues($_SESSION[$this->namespace], $_SESSION['_POP_SESSION_'][$this->namespace]);
+            $this->checkExpirationValues($_SESSION[$this->namespace], $_SESSION['_POP_SESSION_'][$this->namespace]);
+        }
+        return $this;
+    }
+
+    /**
      * Init the session
      *
      * @return void
@@ -128,8 +143,7 @@ class SessionNamespace extends AbstractSession
                 'expirations' => []
             ];
         } else {
-            $this->checkRequests();
-            $this->checkExpirations();
+            $this->sweep();
         }
     }
 
@@ -155,75 +169,13 @@ class SessionNamespace extends AbstractSession
     }
 
     /**
-     * Check the request-based session value
-     *
-     * @return void
-     */
-    private function checkRequest($key): void
-    {
-        if (isset($_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key])) {
-            $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['current']++;
-            $current = $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['current'];
-            $limit   = $_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]['limit'];
-            if ($current > $limit) {
-                unset($_SESSION[$this->namespace][$key]);
-                unset($_SESSION['_POP_SESSION_'][$this->namespace]['requests'][$key]);
-            }
-        }
-    }
-
-    /**
-     * Check the request-based session values
-     *
-     * @return void
-     */
-    private function checkRequests(): void
-    {
-        foreach ($_SESSION[$this->namespace] as $key => $value) {
-            $this->checkRequest($key);
-        }
-    }
-
-    /**
-     * Check the time-based session value
-     *
-     * @return void
-     */
-    private function checkExpiration($key): void
-    {
-        if (isset($_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key]) &&
-            (time() > $_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key])) {
-            unset($_SESSION[$this->namespace][$key]);
-            unset($_SESSION['_POP_SESSION_'][$this->namespace]['expirations'][$key]);
-        }
-    }
-
-    /**
-     * Check the time-based session values
-     *
-     * @return void
-     */
-    private function checkExpirations(): void
-    {
-        foreach ($_SESSION[$this->namespace] as $key => $value) {
-            $this->checkExpiration($key);
-        }
-    }
-
-    /**
      * Get the session values as an array
      *
      * @return array
      */
     public function toArray(): array
     {
-        $session = $_SESSION;
-
-        if (isset($session['_POP_SESSION_'])) {
-            unset($session['_POP_SESSION_']);
-        }
-
-        return $session[$this->namespace] ?? [];
+        return $_SESSION[$this->namespace] ?? [];
     }
 
     /**
