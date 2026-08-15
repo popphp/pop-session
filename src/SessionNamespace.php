@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Pop PHP Framework (https://www.popphp.org/)
  *
@@ -137,7 +138,7 @@ class SessionNamespace extends AbstractSession
                     'expirations' => []
                 ]
             ];
-        } else if (isset($_SESSION['_POP_SESSION_']) && !isset($_SESSION['_POP_SESSION_'][$this->namespace])) {
+        } else if (!isset($_SESSION['_POP_SESSION_'][$this->namespace])) {
             $_SESSION['_POP_SESSION_'][$this->namespace] = [
                 'requests'    => [],
                 'expirations' => []

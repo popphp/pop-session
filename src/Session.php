@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Pop PHP Framework (https://www.popphp.org/)
  *
@@ -72,7 +73,7 @@ class Session extends AbstractSession
                 'domain'   => $options['domain']   ?? $sessionParams['domain'],
                 'secure'   => $options['secure']   ?? $sessionParams['secure'],
                 'httponly' => $options['httponly'] ?? true,
-                'samesite' => $options['samesite'] ?? ($sessionParams['samesite'] ?: 'Lax')
+                'samesite' => $options['samesite'] ?? (ini_get('session.cookie_samesite') ?: 'Lax')
             ]);
 
             if (self::$handler !== null) {
