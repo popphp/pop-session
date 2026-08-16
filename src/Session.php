@@ -266,10 +266,7 @@ class Session extends AbstractSession
     public function toArray(): array
     {
         $session = $_SESSION;
-
-        if (isset($session['_POP_SESSION_'])) {
-            unset($session['_POP_SESSION_']);
-        }
+        unset($session['_POP_SESSION_']);
 
         return $session;
     }

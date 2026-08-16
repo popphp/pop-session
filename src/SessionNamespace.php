@@ -160,12 +160,7 @@ class SessionNamespace extends AbstractSession
             $sess = Session::getInstance();
             $sess->kill();
         } else if (isset($_SESSION[$this->namespace])) {
-            if (isset($_SESSION['_POP_SESSION_'][$this->namespace])) {
-                unset($_SESSION['_POP_SESSION_'][$this->namespace]);
-            }
-            if (isset($_SESSION[$this->namespace])) {
-                unset($_SESSION[$this->namespace]);
-            }
+            unset($_SESSION['_POP_SESSION_'][$this->namespace], $_SESSION[$this->namespace]);
         }
     }
 

@@ -128,7 +128,7 @@ abstract class AbstractSession implements SessionInterface, ArrayAccess, Countab
      */
     protected function checkRequestValues(array &$data, array &$bookkeeping): void
     {
-        foreach ($data as $key => $value) {
+        foreach (array_keys($bookkeeping['requests'] ?? []) as $key) {
             $this->checkRequestValue($key, $data, $bookkeeping);
         }
     }
@@ -158,7 +158,7 @@ abstract class AbstractSession implements SessionInterface, ArrayAccess, Countab
      */
     protected function checkExpirationValues(array &$data, array &$bookkeeping): void
     {
-        foreach ($data as $key => $value) {
+        foreach (array_keys($bookkeeping['expirations'] ?? []) as $key) {
             $this->checkExpirationValue($key, $data, $bookkeeping);
         }
     }
