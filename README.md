@@ -178,7 +178,7 @@ session data:
 use Pop\Session\SessionNamespace;
 
 $sessMyApp = new SessionNamespace('MyApp');
-$sessMyApp->foo = 'bar'
+$sessMyApp->foo = 'bar';
 
 if (isset($sessMyApp->foo)) {
     echo $sessMyApp->foo;  // Only available under the namespace.
