@@ -2,7 +2,7 @@ pop-session
 ===========
 
 [![Build Status](https://github.com/popphp/pop-session/workflows/phpunit/badge.svg)](https://github.com/popphp/pop-session/actions)
-[![Coverage Status](http://cc.popphp.org/coverage.php?comp=pop-session)](http://cc.popphp.org/pop-session/)
+[![Coverage Status](https://cc.popphp.org/coverage.php?comp=pop-session)](https://cc.popphp.org/pop-session/)
 
 [![Join the chat at https://discord.gg/TZjgT74U7E](https://media.popphp.org/img/discord.svg)](https://discord.gg/TZjgT74U7E)
 
